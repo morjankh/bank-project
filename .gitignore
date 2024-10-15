@@ -1,0 +1,16 @@
+﻿# Ignore unnecessary files
+# Ignore Python bytecode and cache files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment directories
+venv/
+Lib/
+Scripts/
+pyvenv.cfg
+
+# Ignore database files
+db.sqlite3
+
+# Ignore IDE config files
+.idea/
