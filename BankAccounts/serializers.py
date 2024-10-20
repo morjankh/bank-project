@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from core.models import BankAccount
 
+
+
 class BankAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
