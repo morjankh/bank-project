@@ -28,6 +28,14 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),
     path('api/', include('UserManagement.urls')),
     path('api/', include('BankAccounts.urls')),
+<<<<<<< Updated upstream
+=======
+    path('api/', include('BankAccountsOperations.urls')),  # Include the operations URLs
+    path('api/', include('Loans.urls')),
+    path('api/', include('Bankitself.urls')), # Include Bankitself URLs
+    path('api/', include('Transactions.urls')),
+
+>>>>>>> Stashed changes
 ]
 
 
