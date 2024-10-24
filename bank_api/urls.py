@@ -29,6 +29,8 @@ urlpatterns = [
     path('api/', include('UserManagement.urls')),
     path('api/', include('BankAccounts.urls')),
     path('api/', include('BankAccountsOperations.urls')),  # Include the operations URLs
+    path('api/', include('Loans.urls')),
+    path('api/', include('Bankitself.urls'))  # Include Bankitself URLs
 ]
 
 
