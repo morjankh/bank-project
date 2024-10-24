@@ -22,8 +22,8 @@ class BankAccount(models.Model):
     account_type = models.CharField(max_length=20, choices=[('savings', 'Savings'), ('checking', 'Checking')])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    closed = models.BooleanField(default=False)  # Indicates if the account is closed
-    has_loan = models.BooleanField(default=False)  # Indicates if the account has a loan
+    closed = models.BooleanField(default=False)
+    has_loan = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Account {self.account_number} - {self.customer.username}"
@@ -46,26 +46,32 @@ class BankAccount(models.Model):
         else:
             try:
                 currency = Currency.objects.get(code=currency_code)
-                amount_in_nis = Decimal(amount) * currency.rate_to_nis  # Convert foreign amount to NIS
+                amount_in_nis = Decimal(amount) * currency.rate_to_nis
                 self.balance += amount_in_nis
                 self.save()
             except Currency.DoesNotExist:
                 raise ValueError(f"Currency {currency_code} not supported.")
 
-        self.save()  # Save the updated account balance
+        self.save()
 
-        # Adjust the bank balance
-        bank = Bank.objects.first()  # Assuming there's only one bank instance
+        transaction = Transaction.objects.create(
+            account=self,
+            transaction_type='deposit',
+            amount=Decimal(amount) if currency_code == 'NIS' else amount_in_nis,
+            fee=0.0
+        )
+
+        bank = Bank.objects.first()
         if bank is None:
-            raise ValueError("Bank not found.")  # Ensure the bank instance exists
+            raise ValueError("Bank not found.")
 
         # Increase bank balance by the deposit amount
         if currency_code == 'NIS':
-            bank.adjust_balance(Decimal(amount))  # Increase bank balance for NIS deposit
+            bank.adjust_balance(Decimal(amount))
         else:
-            bank.adjust_balance(amount_in_nis)  # Increase bank balance for foreign currency deposit
+            bank.adjust_balance(amount_in_nis)
 
-        bank.save()  # Save the updated bank balance
+        bank.save()
 
     def withdraw(self, amount, currency_code):
        if currency_code == 'NIS':
@@ -83,6 +89,13 @@ class BankAccount(models.Model):
             self.save()
         except Currency.DoesNotExist:
             raise ValueError(f"Currency {currency_code} not supported.")
+
+       transaction = Transaction.objects.create(
+           account=self,
+           transaction_type='withdraw',
+           amount=Decimal(amount) if currency_code == 'NIS' else amount_in_nis,
+           fee=5.0
+       )
 
 
     def transfer(self, amount, recipient_account, currency_code='NIS'):
@@ -112,6 +125,14 @@ class BankAccount(models.Model):
 
             except Currency.DoesNotExist:
                 raise ValueError(f"Currency {currency_code} not supported.")
+
+        transaction = Transaction.objects.create(
+            account=self,
+            transaction_type='transfer',
+            amount=Decimal(amount) if currency_code == 'NIS' else amount_in_nis,
+            fee=8.0
+        )
+
 
 ################################################################################################
 class BankOperation(models.Model):
@@ -196,3 +217,21 @@ class Bank(models.Model):
         """
         self.balance += amount
         self.save()
+
+################################################################################################
+
+class Transaction(models.Model):
+    TRANSACTION_TYPES = [
+        ('deposit', 'Deposit'),
+        ('withdraw', 'Withdraw'),
+        ('transfer', 'Transfer'),
+    ]
+
+    account = models.ForeignKey(BankAccount, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.transaction_type} of {self.amount} NIS on {self.timestamp}"

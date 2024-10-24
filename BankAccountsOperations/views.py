@@ -17,9 +17,9 @@ class BankOperationViewSet(viewsets.ViewSet):
         except BankAccount.DoesNotExist:
             return None
 
-################################################################################################
+
     @extend_schema(
-        request=DepositWithdrawSerializer,  # Expose this serializer in Swagger/OpenAPI
+        request=DepositWithdrawSerializer,
         responses={200: 'Deposit successful'}
     )
     @extend_schema(tags=['operations'])
@@ -29,7 +29,7 @@ class BankOperationViewSet(viewsets.ViewSet):
         if account is None:
             return Response({'error': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Retrieve the amount from the request body
+
         serializer = DepositWithdrawSerializer(data=request.data)
         if serializer.is_valid():
             amount = serializer.validated_data['amount']
@@ -43,10 +43,10 @@ class BankOperationViewSet(viewsets.ViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-################################################################################################
+
 
     @extend_schema(
-        request=DepositWithdrawSerializer,  # Expose this serializer in Swagger/OpenAPI
+        request=DepositWithdrawSerializer,
         responses={200: 'Withdraw successful'}
     )
     @extend_schema(tags=['operations'])
@@ -56,7 +56,7 @@ class BankOperationViewSet(viewsets.ViewSet):
         if account is None:
             return Response({'error': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Retrieve the amount from the request body
+
         serializer = DepositWithdrawSerializer(data=request.data)
         if serializer.is_valid():
             amount = serializer.validated_data['amount']
@@ -70,7 +70,7 @@ class BankOperationViewSet(viewsets.ViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-################################################################################################
+
 
     @extend_schema(tags=['operations'])
     @action(detail=True, methods=['get'])
@@ -81,31 +81,30 @@ class BankOperationViewSet(viewsets.ViewSet):
 
         return Response({"balance": account.balance}, status=status.HTTP_200_OK)
 
-################################################################################################
+
 
     @extend_schema(
-        request=TransferSerializer,  # Use this for amount handling in transfer
+        request=TransferSerializer,
         responses={200: 'Transfer successful'}
     )
     @extend_schema(tags=['operations'])
     @action(detail=False, methods=['post'])
     def transfer(self, request):
-        # Validate the incoming request data
         serializer = TransferSerializer(data=request.data)
         if serializer.is_valid():
             from_account_id = serializer.validated_data['from_account']
             to_account_id = serializer.validated_data['to_account']
             amount = serializer.validated_data['amount']
-            currency_code = serializer.validated_data.get('currency_code', 'NIS')  # Default to NIS
+            currency_code = serializer.validated_data.get('currency_code', 'NIS')
 
-            # Fetch the accounts based on IDs
+
             try:
                 from_account = BankAccount.objects.get(pk=from_account_id)
                 to_account = BankAccount.objects.get(pk=to_account_id)
             except BankAccount.DoesNotExist:
                 return Response({'error': 'One or both accounts not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            # Perform the transfer
+
             try:
                 from_account.transfer(amount, to_account, currency_code)
                 BankOperation.objects.create(account=from_account, operation_type='transfer', amount=amount, recipient_account=to_account)

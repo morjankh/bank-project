@@ -11,8 +11,8 @@ class BankAccountSerializer(serializers.ModelSerializer):
         read_only_fields = ['has_loan', 'closed']
 
     def create(self, validated_data):
-        validated_data['has_loan'] = False  # Default value for has_loan
-        validated_data['closed'] = False  # Default value for closed
+        validated_data['has_loan'] = False
+        validated_data['closed'] = False
         bank_account = BankAccount.objects.create(**validated_data)
         return bank_account
 
@@ -21,7 +21,7 @@ class BankAccountSerializer(serializers.ModelSerializer):
         instance.balance = validated_data.get('balance', instance.balance)
         instance.account_type = validated_data.get('account_type', instance.account_type)
         instance.closed = validated_data.get('closed',
-                                             instance.closed)  # Allow closing of the account through serializer
-        instance.has_loan = validated_data.get('has_loan', instance.has_loan)  # Update loan status if needed
+                                             instance.closed)
+        instance.has_loan = validated_data.get('has_loan', instance.has_loan)
         instance.save()
         return instance

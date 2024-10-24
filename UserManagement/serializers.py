@@ -1,16 +1,14 @@
 from django.core.mail import send_mail
 from rest_framework import serializers
-from core.models import Customer  # Import the Customer model from core
+from core.models import Customer
 
 class CustomerSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)  # Ensure password is write-only
-
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = Customer
         fields = ['id', 'username', 'email', 'phone_number', 'address', 'password']
 
     def create(self, validated_data):
-        # Create a new Customer with encrypted password
         customer = Customer.objects.create(**validated_data)
         customer.set_password(validated_data['password'])
         customer.save()

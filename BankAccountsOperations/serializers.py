@@ -15,13 +15,13 @@ from core.models import BankOperation, BankAccount
 
 class DepositWithdrawSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=8, decimal_places=2)
-    currency_code = serializers.CharField(max_length=3, required=False)  # Optional field
+    currency_code = serializers.CharField(max_length=3, required=False)
 
 
 class TransferSerializer(serializers.Serializer):
-    from_account = serializers.IntegerField()  # ID of the account sending the money
-    to_account = serializers.IntegerField()    # ID of the account receiving the money
-    amount = serializers.DecimalField(max_digits=8, decimal_places=2)  # Amount to transfer
-    currency_code = serializers.CharField(max_length=3, required=False)  # Optional; default to NIS
+    from_account = serializers.IntegerField()
+    to_account = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=8, decimal_places=2)
+    currency_code = serializers.CharField(max_length=3, required=False)
 
 

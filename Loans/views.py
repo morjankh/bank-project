@@ -8,7 +8,7 @@ from drf_spectacular.utils import extend_schema
 
 class LoanViewSet(viewsets.ModelViewSet):
     queryset = Loans.objects.all()
-    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action == 'grant_loan':
@@ -31,20 +31,20 @@ class LoanViewSet(viewsets.ModelViewSet):
     @extend_schema(tags=['Loans'])
     @action(detail=True, methods=['post'], url_path='repay')
     def repay(self, request, pk=None):
-        loan = self.get_object()  # Get the loan object based on the primary key (pk)
-        serializer = RepayLoanSerializer(data=request.data, context={'loan_instance': loan})  # Pass the loan instance
+        loan = self.get_object()
+        serializer = RepayLoanSerializer(data=request.data, context={'loan_instance': loan})
 
         if serializer.is_valid():
-            serializer.update(loan, serializer.validated_data)  # Call update method on serializer
+            serializer.update(loan, serializer.validated_data)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Endpoint to get loans for the authenticated customer
+
     @extend_schema(tags=['Loans'])
     @action(detail=False, methods=['get'], url_path='customer')
     def customer_loans(self, request):
-        customer = request.user  # Get authenticated customer
-        loans = Loans.objects.filter(customer=customer)  # Filter loans by customer
+        customer = request.user
+        loans = Loans.objects.filter(customer=customer)
         serializer = self.get_serializer(loans, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

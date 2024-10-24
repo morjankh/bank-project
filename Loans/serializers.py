@@ -9,7 +9,7 @@ class GrantLoanSerializer(serializers.ModelSerializer):
         fields = ['account', 'amount']
 
     def create(self, validated_data):
-        request = self.context['request']  # Get the authenticated user
+        request = self.context['request']
         customer = request.user
 
         # Create the loan
@@ -18,10 +18,10 @@ class GrantLoanSerializer(serializers.ModelSerializer):
             account=validated_data['account'],
             amount=validated_data['amount'],
             remaining_balance=validated_data['amount'],
-            due_date=timezone.now().date() + timedelta(days=365)  # Loan duration is 12 months
+            due_date=timezone.now().date() + timedelta(days=365)
         )
 
-        loan.grant_loan()  # Initialize the loan and update account balance
+        loan.grant_loan()
         return loan
 
 
@@ -36,13 +36,13 @@ class RepayLoanSerializer(serializers.Serializer):
 
     def validate(self, data):
         """ Validate repayment amount against expected monthly payment. """
-        loan_instance = self.context['loan_instance']  # Pass the loan instance in context
+        loan_instance = self.context['loan_instance']
         repayment_amount = data.get('repayment_amount')
 
-        # Calculate the expected monthly repayment (10% of the original loan amount)
+
         monthly_repayment = (loan_instance.amount * loan_instance.interest_rate) / 100
 
-        # Ensure the repayment matches the expected amount (10% of the original loan)
+
         if repayment_amount != monthly_repayment:
             raise serializers.ValidationError(f"Expected repayment is {monthly_repayment}, but received {repayment_amount}.")
 
@@ -51,7 +51,6 @@ class RepayLoanSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         repayment_amount = validated_data.get('repayment_amount')
 
-        # Perform the loan repayment (this will reduce the months and balance)
         instance.repay(repayment_amount)
 
         return instance
